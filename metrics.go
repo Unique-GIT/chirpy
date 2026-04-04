@@ -12,12 +12,15 @@ type apiConfig struct {
 }
 
 func (a *apiConfig) logHits(w http.ResponseWriter, r *http.Request) {
-	_, err := w.Write([]byte(fmt.Sprintf("Hits: %v", a.fileserverHits.Load())))
+
+	_, err := w.Write([]byte(fmt.Sprintf(
+		"<html><body><h1>Welcome, Chirpy Admin</h1><p>Chirpy has been visited %d times!</p></body></html>",
+		a.fileserverHits.Load())))
 	if err != nil {
 		log.Printf("Error Writing the Body of the Message in the Metrics Handler: %v \n ", err)
 	}
 
-	w.Header().Add("Content-Type", "text/plain; charset=utf-8")
+	w.Header().Add("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
 }
 

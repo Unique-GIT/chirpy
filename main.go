@@ -38,12 +38,12 @@ func main() {
 			),
 		),
 	)
-	router.Handle("GET /api/metrics",
+	router.Handle("GET /admin/metrics",
 		middlewareLog(
 			http.HandlerFunc(config.logHits),
 		),
 	)
-	router.Handle("POST /api/reset",
+	router.Handle("POST /admin/reset",
 		middlewareLog(
 			http.HandlerFunc(config.reset),
 		),
