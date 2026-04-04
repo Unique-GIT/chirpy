@@ -21,7 +21,7 @@ func (a *apiConfig) middlewareIncrementMetrics(next http.Handler) http.Handler {
 func (a *apiConfig) logHits(w http.ResponseWriter, r *http.Request) {
 	_, err := w.Write([]byte(fmt.Sprintf("Hits: %v", a.fileserverHits.Load())))
 	if err != nil {
-		log.Printf("Error Writing the Body of the Message in the Metrics Handler: %v", err)
+		log.Printf("Error Writing the Body of the Message in the Metrics Handler: %v \n ", err)
 	}
 }
 
@@ -34,13 +34,13 @@ func handlerHealth(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	_, err := w.Write([]byte(http.StatusText(http.StatusOK)))
 	if err != nil {
-		log.Printf("Error Writing the Body of the Message in the Health Handler: %v", err)
+		log.Printf("Error Writing the Body of the Message in the Health Handler: %v \n", err)
 	}
 }
 
 func middlewareLog(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Served Request %s on %s", r.Method, r.URL.Path)
+		log.Printf("Served Request %s on %s \n", r.Method, r.URL.Path)
 		next.ServeHTTP(w, r)
 	})
 }
