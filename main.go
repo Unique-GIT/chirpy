@@ -1,42 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"sync/atomic"
 )
-
-type apiConfig struct {
-	fileserverHits atomic.Int32
-}
-
-func (a *apiConfig) middlewareIncrementMetrics(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		a.fileserverHits.Add(1)
-		next.ServeHTTP(w, r)
-	})
-}
-
-func (a *apiConfig) logHits(w http.ResponseWriter, r *http.Request) {
-	_, err := w.Write([]byte(fmt.Sprintf("Hits: %v", a.fileserverHits.Load())))
-	if err != nil {
-		log.Printf("Error Writing the Body of the Message in the Metrics Handler: %v \n ", err)
-	}
-}
-
-func (a *apiConfig) reset(w http.ResponseWriter, r *http.Request) {
-	a.fileserverHits.Store(0)
-}
-
-func handlerHealth(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	w.WriteHeader(http.StatusOK)
-	_, err := w.Write([]byte(http.StatusText(http.StatusOK)))
-	if err != nil {
-		log.Printf("Error Writing the Body of the Message in the Health Handler: %v \n", err)
-	}
-}
 
 func middlewareLog(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -63,19 +31,19 @@ func main() {
 			),
 		),
 	)
-	router.Handle("/healthz",
+	router.Handle("GET /api/healthz",
 		middlewareLog(
 			config.middlewareIncrementMetrics(
 				http.HandlerFunc(handlerHealth),
 			),
 		),
 	)
-	router.Handle("/metrics",
+	router.Handle("GET /api/metrics",
 		middlewareLog(
 			http.HandlerFunc(config.logHits),
 		),
 	)
-	router.Handle("/reset",
+	router.Handle("POST /api/reset",
 		middlewareLog(
 			http.HandlerFunc(config.reset),
 		),
