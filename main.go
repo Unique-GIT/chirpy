@@ -1,9 +1,14 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
+	"os"
 	"sync/atomic"
+
+	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 )
 
 func middlewareLog(next http.Handler) http.Handler {
@@ -16,6 +21,14 @@ func middlewareLog(next http.Handler) http.Handler {
 func main() {
 	const filePathRoot = "."
 	const port = "8080"
+	godotenv.Load()
+	dbURL := os.Getenv("DB_URL")
+	_, err := sql.Open("postgres", dbURL)
+	if err != nil {
+		log.Printf("Error connecting to database: %v", err)
+		return
+	}
+	// dbQueries := database.New(db)
 
 	fileHandler := http.StripPrefix("/app", http.FileServer(http.Dir(filePathRoot)))
 
