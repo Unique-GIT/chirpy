@@ -38,6 +38,13 @@ func main() {
 			),
 		),
 	)
+	router.Handle("POST /api/validate_chirp",
+		middlewareLog(
+			config.middlewareIncrementMetrics(
+				http.HandlerFunc(validate_chirp),
+			),
+		),
+	)
 	router.Handle("GET /admin/metrics",
 		middlewareLog(
 			http.HandlerFunc(config.logHits),
