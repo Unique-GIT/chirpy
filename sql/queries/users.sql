@@ -15,3 +15,7 @@ DELETE FROM users;
 -- name: UsersExists :one
 SELECT * FROM users
 WHERE users.id = $1;
+
+-- name: GetUserByEmail :one
+SELECT * FROM users
+WHERE email = $1;
