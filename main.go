@@ -58,17 +58,17 @@ func main() {
 			),
 		),
 	)
+	router.Handle("POST /api/chirps",
+		middlewareLog(
+			config.middlewareIncrementMetrics(
+				http.HandlerFunc(config.validate_chirp),
+			),
+		),
+	)
 	router.Handle("GET /api/healthz",
 		middlewareLog(
 			config.middlewareIncrementMetrics(
 				http.HandlerFunc(handlerHealth),
-			),
-		),
-	)
-	router.Handle("POST /api/validate_chirp",
-		middlewareLog(
-			config.middlewareIncrementMetrics(
-				http.HandlerFunc(validate_chirp),
 			),
 		),
 	)

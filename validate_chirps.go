@@ -4,14 +4,22 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+
+	"github.com/Unique-GIT/chirpy/internal/database"
+	"github.com/google/uuid"
 )
 
-func validate_chirp(w http.ResponseWriter, r *http.Request) {
+func (cfg *apiConfig) validate_chirp(w http.ResponseWriter, r *http.Request) {
 	type requestType struct {
-		RequestBody string `json:"body"`
+		RequestBody string    `json:"body"`
+		UserId      uuid.UUID `json:"user_id"`
 	}
 	type returnType struct {
-		Response string `json:"cleaned_body"`
+		Id        string `json:"id"`
+		CreatedAt string `json:"created_at"`
+		UpdatedAt string `json:"updated_at"`
+		Body      string `json:"body"`
+		UserId    string `json:"user_id"`
 	}
 
 	// Processing Request
@@ -21,6 +29,14 @@ func validate_chirp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Check is user exists
+	_, err := cfg.db.UsersExists(r.Context(), request.UserId)
+	if err != nil {
+		respondWithJsonError(w, http.StatusBadRequest, "User Doesn't exist", nil)
+		return
+	}
+
+	// Validation of Chirp
 	// Length check
 	if len(request.RequestBody) > 140 {
 		// Too long
@@ -29,8 +45,20 @@ func validate_chirp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check for profane words
-	respondWithJson(w, http.StatusOK, returnType{
-		Response: validated_body(request.RequestBody),
+	CleanedChirp := validated_body(request.RequestBody)
+
+	// Create this chirp
+	chirp, err := cfg.db.CreateChirp(r.Context(), database.CreateChirpParams{
+		Body:   CleanedChirp,
+		UserID: request.UserId,
+	})
+
+	respondWithJson(w, http.StatusCreated, returnType{
+		Id:        chirp.ID.String(),
+		CreatedAt: chirp.CreatedAt.String(),
+		UpdatedAt: chirp.UpdatedAt.String(),
+		Body:      chirp.Body,
+		UserId:    chirp.UserID.String(),
 	})
 }
 
