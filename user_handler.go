@@ -3,11 +3,15 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/Unique-GIT/chirpy/internal/auth"
+	"github.com/Unique-GIT/chirpy/internal/database"
 )
 
 func (a *apiConfig) handlerUser(w http.ResponseWriter, r *http.Request) {
 	type requestType struct {
-		Email string `json:"email"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
 	}
 	type responseType struct {
 		Id        string `json:"id"`
@@ -23,8 +27,18 @@ func (a *apiConfig) handlerUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Hash Password
+	hash, err := auth.HashPassword(request.Password)
+	if err != nil {
+		respondWithJsonError(w, http.StatusInternalServerError, "Error Hashing Password", err)
+		return
+	}
+
 	// Process Request
-	user, err := a.db.CreateUser(r.Context(), request.Email)
+	user, err := a.db.CreateUser(r.Context(), database.CreateUserParams{
+		Email:          request.Email,
+		HashedPassword: hash,
+	})
 	if err != nil {
 		respondWithJsonError(w, http.StatusInternalServerError, "Internal Server Error", err)
 		return
