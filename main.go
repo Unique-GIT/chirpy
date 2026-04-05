@@ -7,15 +7,14 @@ import (
 	"os"
 	"sync/atomic"
 
+	"github.com/Unique-GIT/chirpy/internal/database"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
-func middlewareLog(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Served Request %s on %s \n", r.Method, r.URL.Path)
-		next.ServeHTTP(w, r)
-	})
+type apiConfig struct {
+	fileserverHits atomic.Int32
+	db             *database.Queries
 }
 
 func main() {
@@ -23,17 +22,18 @@ func main() {
 	const port = "8080"
 	godotenv.Load()
 	dbURL := os.Getenv("DB_URL")
-	_, err := sql.Open("postgres", dbURL)
+	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
 		log.Printf("Error connecting to database: %v", err)
 		return
 	}
-	// dbQueries := database.New(db)
+	dbQueries := database.New(db)
 
 	fileHandler := http.StripPrefix("/app", http.FileServer(http.Dir(filePathRoot)))
 
 	config := apiConfig{
 		fileserverHits: atomic.Int32{},
+		db:             dbQueries,
 	}
 
 	router := http.NewServeMux()
@@ -41,6 +41,13 @@ func main() {
 		middlewareLog(
 			config.middlewareIncrementMetrics(
 				fileHandler,
+			),
+		),
+	)
+	router.Handle("POST /api/user",
+		middlewareLog(
+			config.middlewareIncrementMetrics(
+				http.HandlerFunc(config.handlerUser),
 			),
 		),
 	)

@@ -4,12 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"sync/atomic"
 )
-
-type apiConfig struct {
-	fileserverHits atomic.Int32
-}
 
 func (a *apiConfig) logHits(w http.ResponseWriter, r *http.Request) {
 
