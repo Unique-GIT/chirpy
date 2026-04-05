@@ -72,6 +72,13 @@ func main() {
 			),
 		),
 	)
+	router.Handle("GET /api/chirps/{ChirpsId}",
+		middlewareLog(
+			config.middlewareIncrementMetrics(
+				http.HandlerFunc(config.getChirpById),
+			),
+		),
+	)
 	router.Handle("GET /api/healthz",
 		middlewareLog(
 			config.middlewareIncrementMetrics(
