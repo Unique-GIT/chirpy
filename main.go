@@ -65,6 +65,13 @@ func main() {
 			),
 		),
 	)
+	router.Handle("GET /api/chirps",
+		middlewareLog(
+			config.middlewareIncrementMetrics(
+				http.HandlerFunc(config.getChirps),
+			),
+		),
+	)
 	router.Handle("GET /api/healthz",
 		middlewareLog(
 			config.middlewareIncrementMetrics(
