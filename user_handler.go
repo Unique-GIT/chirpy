@@ -73,3 +73,48 @@ func (a *apiConfig) handlerDeleteUser(w http.ResponseWriter, r *http.Request) {
 		Message: "Deleted All users",
 	})
 }
+
+func (a *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
+	type requestType struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+	type responseType struct {
+		Id        string `json:"id"`
+		CreatedAt string `json:"created_at"`
+		UpdatedAt string `json:"updated_at"`
+		Email     string `json:"email"`
+	}
+
+	// Get Request
+	var request requestType
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		respondWithJsonError(w, http.StatusBadRequest, "Wrong Input Format", err)
+		return
+	}
+
+	// Find user
+	user, err := a.db.GetUserByEmail(r.Context(), request.Email)
+	if err != nil {
+		respondWithJsonError(w, http.StatusUnauthorized, "User Does Not Exist", nil)
+		return
+	}
+
+	// Compare password
+	correctPassword, err := auth.CheckPasswordHash(request.Password, user.HashedPassword)
+	if err != nil {
+		respondWithJsonError(w, http.StatusInternalServerError, "Error comparing hashes of password", err)
+		return
+	}
+	if !correctPassword {
+		respondWithJsonError(w, http.StatusUnauthorized, "Wrong Password", nil)
+		return
+	}
+
+	respondWithJson(w, http.StatusOK, responseType{
+		Id:        user.ID.String(),
+		CreatedAt: user.CreatedAt.String(),
+		UpdatedAt: user.UpdatedAt.String(),
+		Email:     user.Email,
+	})
+}

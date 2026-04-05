@@ -58,6 +58,13 @@ func main() {
 			),
 		),
 	)
+	router.Handle("POST /api/login",
+		middlewareLog(
+			config.middlewareIncrementMetrics(
+				http.HandlerFunc(config.handlerLogin),
+			),
+		),
+	)
 	router.Handle("POST /api/chirps",
 		middlewareLog(
 			config.middlewareIncrementMetrics(
