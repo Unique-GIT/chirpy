@@ -13,7 +13,7 @@ import (
 type Chirp struct {
 	ID        uuid.UUID
 	CreatedAt time.Time
-	UpdatdAt  time.Time
+	UpdatedAt time.Time
 	Body      string
 	UserID    uuid.UUID
 }

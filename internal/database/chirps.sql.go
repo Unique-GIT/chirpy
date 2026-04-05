@@ -12,7 +12,7 @@ import (
 )
 
 const createChirp = `-- name: CreateChirp :one
-INSERT INTO chirps(id, created_at, updated_at, body,user_id)
+INSERT INTO chirps(id, created_at, updated_at, body, user_id)
 VALUES(
     gen_random_uuid(),
     NOW(),
@@ -20,7 +20,7 @@ VALUES(
     $1,
     $2
 )
-RETURNING id, created_at, updatd_at, body, user_id
+RETURNING id, created_at, updated_at, body, user_id
 `
 
 type CreateChirpParams struct {
@@ -34,7 +34,7 @@ func (q *Queries) CreateChirp(ctx context.Context, arg CreateChirpParams) (Chirp
 	err := row.Scan(
 		&i.ID,
 		&i.CreatedAt,
-		&i.UpdatdAt,
+		&i.UpdatedAt,
 		&i.Body,
 		&i.UserID,
 	)
