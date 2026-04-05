@@ -38,3 +38,24 @@ func (a *apiConfig) handlerUser(w http.ResponseWriter, r *http.Request) {
 		Email:     user.Email,
 	})
 }
+
+func (a *apiConfig) handlerDeleteUser(w http.ResponseWriter, r *http.Request) {
+	if a.platform != "dev" {
+		respondWithJsonError(w, http.StatusForbidden, "Deletion Not Allowed", nil)
+		return
+	}
+
+	a.fileserverHits.Store(0)
+	err := a.db.DeleteUsers(r.Context())
+	if err != nil {
+		respondWithJsonError(w, http.StatusInternalServerError, "Error Deleting users", err)
+		return
+	}
+
+	type responseType struct {
+		Message string `json:"msg"`
+	}
+	respondWithJson(w, http.StatusOK, responseType{
+		Message: "Deleted All users",
+	})
+}

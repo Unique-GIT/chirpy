@@ -15,11 +15,14 @@ import (
 type apiConfig struct {
 	fileserverHits atomic.Int32
 	db             *database.Queries
+	platform       string
 }
 
 func main() {
 	const filePathRoot = "."
 	const port = "8080"
+
+	// Get DB Queries
 	godotenv.Load()
 	dbURL := os.Getenv("DB_URL")
 	db, err := sql.Open("postgres", dbURL)
@@ -29,11 +32,15 @@ func main() {
 	}
 	dbQueries := database.New(db)
 
+	// Get Platform
+	platform := os.Getenv("PLATFORM")
+
 	fileHandler := http.StripPrefix("/app", http.FileServer(http.Dir(filePathRoot)))
 
 	config := apiConfig{
 		fileserverHits: atomic.Int32{},
 		db:             dbQueries,
+		platform:       platform,
 	}
 
 	router := http.NewServeMux()
@@ -44,7 +51,7 @@ func main() {
 			),
 		),
 	)
-	router.Handle("POST /api/user",
+	router.Handle("POST /api/users",
 		middlewareLog(
 			config.middlewareIncrementMetrics(
 				http.HandlerFunc(config.handlerUser),
@@ -72,7 +79,7 @@ func main() {
 	)
 	router.Handle("POST /admin/reset",
 		middlewareLog(
-			http.HandlerFunc(config.reset),
+			http.HandlerFunc(config.handlerDeleteUser),
 		),
 	)
 
